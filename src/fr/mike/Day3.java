@@ -10,38 +10,79 @@ public class Day3 {
         List<Point> wire1 = calculAllPoints(inputs[0]);
         List<Point> wire2 = calculAllPoints(inputs[1]);
 
-//        System.out.println("Wire 1: " + wire1);
-//        System.out.println("Wire 2: " + wire2);
+        System.out.println("Wire 1: " + wire1);
+        System.out.println("Wire 2: " + wire2);
 
         TreeMap<Integer, Point> crossedPoints = getAllCrossedPoints(wire1, wire2);
 
         System.out.println("crossedPoints: " + crossedPoints);
+
+        drawCableManager(wire1, wire2);
     }
 
     public static TreeMap<Integer, Point> getAllCrossedPoints(List<Point> firstWire, List<Point> secondWire){
         TreeMap<Integer, Point> allCrossedPoints = new TreeMap<>();
 
         for(int i = 0; i < firstWire.size(); i++){
-//            for(int j = 0; j < secondWire.size(); j++){
-//                if(firstWire.get(i).x == secondWire.get(j).x && firstWire.get(i).y == secondWire.get(j).y){
-//                    Point p1 = firstWire.get(i);
-//                    Point origin = new Point(1, 1);
-//
-//                    allCrossedPoints.put(calculManhattanDistance(origin, p1), p1);
-//                }
-//            }
-
             if(secondWire.contains(firstWire.get(i))){
-                System.out.println("FirstWire pos: " + firstWire.get(i));
+                System.out.println("crossedPoint pos: " + firstWire.get(i));
 
                 Point p1 = firstWire.get(i);
-                Point origin = new Point();
+                Point origin = new Point(1, 1);
 
                 allCrossedPoints.put(calculManhattanDistance(origin, p1), p1);
             }
         }
 
         return allCrossedPoints;
+    }
+
+    public static void drawCableManager(List<Point> firstWire, List<Point> secondWire){
+//        int firstWireRangeX = firstWire.stream().mapToInt(v -> v.x).max().getAsInt();
+        int firstWireRangeX = firstWire.sort(firstWire);
+        int firstWireRangeY = firstWire.stream().mapToInt(v -> v.y).max().getAsInt();
+
+        int secondWireRangeX = secondWire.stream().mapToInt(v -> v.x).max().getAsInt();
+        int secondWireRangeY = secondWire.stream().mapToInt(v -> v.y).max().getAsInt();
+
+        int rangeX = Math.max(firstWireRangeX, secondWireRangeX) + 1;
+        int rangeY = Math.max(firstWireRangeY, secondWireRangeY) + 1;
+
+        System.out.println("MAX: (" + rangeX + "," + rangeY + ")");
+
+        String[][] draw = new String[rangeX][rangeY];
+
+        // Init part
+        for(int i = 0; i < rangeX; i++){
+            String[] tmp = new String[rangeY];
+            Arrays.fill(tmp, ".");
+            draw[i] = tmp;
+        }
+
+        for(Point point : firstWire){
+            System.out.println("Trying: (" + (rangeX-point.x) + ", " + (point.y-1) + ")");
+            draw[rangeX-point.x][point.y-1] = (draw[rangeX-point.x][point.y-1].equals("W1")) ? "+" : "W1";
+        }
+
+        for(Point point : secondWire){
+            if(draw[rangeX-point.x][point.y-1].equals("W2")){
+                draw[rangeX-point.x][point.y-1] = "+";
+            }else if(draw[rangeX-point.x][point.y-1].equals("W1")){
+                draw[rangeX-point.x][point.y-1] = "X";
+            }else{
+                draw[rangeX-point.x][point.y-1] = "W2";
+            }
+        }
+
+        draw[rangeX-1][0] = "O";
+
+        // Printing part
+        for(int i = 0; i < draw.length; i++){
+            for(int j = 0; j < draw[i].length; j++){
+                System.out.format("%3s", draw[i][j]);
+            }
+            System.out.println("");
+        }
     }
 
     public static int calculManhattanDistance(Point a, Point b){
@@ -62,29 +103,29 @@ public class Day3 {
             int YStartAt = lastPos.y;
 
             switch (direction){
-                case 'R':
-                    for(int i = XStartAt; i < (directionLength+XStartAt); i++){
+                case 'U':
+                    for(int i = XStartAt; i <= (directionLength+XStartAt); i++){
                         Point tmp = new Point(i, lastPos.y);
                         movesPoint.add(tmp);
                         lastPos = tmp;
                     }
                     break;
-                case 'U':
-                    for(int i = YStartAt; i < (directionLength+YStartAt); i++){
+                case 'R':
+                    for(int i = YStartAt; i <= (directionLength+YStartAt); i++){
                         Point tmp = new Point(lastPos.x, i);
                         movesPoint.add(tmp);
                         lastPos = tmp;
                     }
                     break;
-                case 'L':
-                    for(int i = XStartAt; i > (XStartAt-directionLength); i--){
+                case 'D':
+                    for(int i = XStartAt; i >= (XStartAt-directionLength); i--){
                         Point tmp = new Point(i, lastPos.y);
                         movesPoint.add(tmp);
                         lastPos = tmp;
                     }
                     break;
-                case 'D':
-                    for(int i = YStartAt; i > (YStartAt-directionLength); i--){
+                case 'L':
+                    for(int i = YStartAt; i >= (YStartAt-directionLength); i--){
                         Point tmp = new Point(lastPos.x, i);
                         movesPoint.add(tmp);
                         lastPos = tmp;
@@ -99,6 +140,10 @@ public class Day3 {
     }
 
     public static String getInput(){
+//        return "R3,U5\n" +
+//                "U2";
+//            return "R8,U5,L5,D3\n" +
+//                    "U7,R6,D4,L4";
         return "R75,D30,R83,U83,L12,D49,R71,U7,L72\n" +
                 "U62,R66,U55,R34,D71,R55,D58,R83";
     }
